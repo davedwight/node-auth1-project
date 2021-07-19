@@ -6,9 +6,17 @@ const User = require("../users/users-model");
 const bcrypt = require("bcryptjs");
 
 router.post("/register", async (req, res, next) => {
-  res.status(201).json({
-    message: "auth post working",
-  });
+  const { username, password } = req.body;
+  const hash = bcrypt.hashSync(password, 8);
+  const newUser = {
+    username: username,
+    password: hash
+  };
+  const dbUser = await User.add(newUser);
+  res.status(200).json({
+    user_id: dbUser.user_id,
+    username: dbUser.username,
+  })
 });
 /**
   1 [POST] /api/auth/register { "username": "sue", "password": "1234" }
