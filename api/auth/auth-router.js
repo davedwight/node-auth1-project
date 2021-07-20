@@ -5,7 +5,9 @@ const router = express.Router();
 const User = require("../users/users-model");
 const bcrypt = require("bcryptjs");
 
-router.post("/register", async (req, res, next) => {
+const { checkUsernameFree, checkUsernameExists } = require('./auth-middleware');
+
+router.post("/register", checkUsernameFree, async (req, res, next) => {
   const { username, password } = req.body;
   const hash = bcrypt.hashSync(password, 8);
   const newUser = {
@@ -41,7 +43,7 @@ router.post("/register", async (req, res, next) => {
   }
  */
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", checkUsernameExists, async (req, res, next) => {
   const { username, password } = req.body;
   const user = await User.findBy({ username }).first();
 
