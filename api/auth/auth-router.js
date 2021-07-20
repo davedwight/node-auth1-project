@@ -10,13 +10,13 @@ router.post("/register", async (req, res, next) => {
   const hash = bcrypt.hashSync(password, 8);
   const newUser = {
     username: username,
-    password: hash
+    password: hash,
   };
   const dbUser = await User.add(newUser);
   res.status(200).json({
     user_id: dbUser.user_id,
     username: dbUser.username,
-  })
+  });
 });
 /**
   1 [POST] /api/auth/register { "username": "sue", "password": "1234" }
@@ -41,6 +41,21 @@ router.post("/register", async (req, res, next) => {
   }
  */
 
+router.post("/login", async (req, res, next) => {
+  const { username, password } = req.body;
+  const user = await User.findBy({ username }).first();
+
+  if (user && bcrypt.compareSync(password, user.password)) {
+    req.session.user = user;
+    res.json({
+      message: `Welcome ${username}!`,
+    });
+  } else {
+    res.status(401).json({
+      message: "Invalid credentials",
+    });
+  }
+});
 /**
   2 [POST] /api/auth/login { "username": "sue", "password": "1234" }
 
