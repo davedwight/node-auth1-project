@@ -5,21 +5,30 @@ const router = express.Router();
 const User = require("../users/users-model");
 const bcrypt = require("bcryptjs");
 
-const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require('./auth-middleware');
+const {
+  checkUsernameFree,
+  checkUsernameExists,
+  checkPasswordLength,
+} = require("./auth-middleware");
 
-router.post("/register", checkUsernameFree, checkPasswordLength, async (req, res, next) => {
-  const { username, password } = req.body;
-  const hash = bcrypt.hashSync(password, 8);
-  const newUser = {
-    username: username,
-    password: hash,
-  };
-  const dbUser = await User.add(newUser);
-  res.status(200).json({
-    user_id: dbUser.user_id,
-    username: dbUser.username,
-  });
-});
+router.post(
+  "/register",
+  checkUsernameFree,
+  checkPasswordLength,
+  async (req, res, next) => {
+    const { username, password } = req.body;
+    const hash = bcrypt.hashSync(password, 8);
+    const newUser = {
+      username: username,
+      password: hash,
+    };
+    const dbUser = await User.add(newUser);
+    res.status(200).json({
+      user_id: dbUser.user_id,
+      username: dbUser.username,
+    });
+  }
+);
 /**
   1 [POST] /api/auth/register { "username": "sue", "password": "1234" }
 
@@ -74,6 +83,28 @@ router.post("/login", checkUsernameExists, async (req, res, next) => {
   }
  */
 
+router.get("/logout", (req, res) => {
+  if (req.session && req.session.user) {
+    const { username } = req.session.user;
+    req.session.destroy((err) => {
+      if (err) {
+        res.json({
+          message: `you can never leave, ${username}...`,
+        });
+      } else {
+        res.json({
+          status: 200,
+          message: "logged out",
+        });
+      }
+    });
+  } else {
+    res.json({
+      status: 200,
+      message: "no session",
+    });
+  }
+});
 /**
   3 [GET] /api/auth/logout
 
